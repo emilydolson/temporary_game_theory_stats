@@ -2,6 +2,7 @@ import sys
 import random
 import numpy as np
 import scipy.stats as ss
+import pandas as pd
 
 game_dict = {
     (1,3,2,4): "Prisoner's Dilemma",
@@ -43,16 +44,25 @@ def determine_game(game):
     return game_dict[tuple(row)]
 
 
-if __name__ == "__main__":
+def get_uv(game):
+    print(game)
 
-    if len(sys.argv) < 4:
-        print("Usage: python game_stats.py [game_data.csv] [errors.csv] [n_randomizations]")
+    R,S,T,P = game
 
+    if R < P:
+        R,S,T,P = P,T,S,R
+
+    U = (S - P) / (R - P)
+    V = (T - P) / (R - P)
+
+    return U, V
+
+def get_data(game_file, std_file):
     games = []
     errors = []
     lines = []
 
-    with open(sys.argv[1]) as infile:
+    with open(game_file) as infile:
         infile.readline()
         lines = infile.readlines()
 
@@ -63,7 +73,7 @@ if __name__ == "__main__":
         new_game = [float(val.strip()) for val in new_game]
         games.append(new_game)
 
-    with open(sys.argv[2]) as infile:
+    with open(std_file) as infile:
         infile.readline()
         lines = infile.readlines()
 
@@ -74,16 +84,36 @@ if __name__ == "__main__":
         new_err = [float(val.strip()) for val in new_err]
         errors.append(new_err)
 
+    return games, errors
+
+
+def simulate_games(games, errors, n):
+    Us = []
+    Vs = []
+    condition_list = []
+    label_list = []
+
     for game_i in range(len(games)):
         game = games[game_i]
         error = errors[game_i]
         game_counts = {}
-        for _ in range(int(sys.argv[3])):
+        for _ in range(n):
             values = [random.gauss(game[pos], error[pos]) for pos in range(4)]
             game_class = determine_game(values)
-            if game_class in game_counts:
-                game_counts[game_class] += 1
-            else:
-                game_counts[game_class] = 1
+            label_list.append(game_class)
+            u, v = get_uv(values)
+            Us.append(u)
+            Vs.append(v)
+            condition_list.append(game_i)
+ 
+    df = pd.DataFrame({"U": Us, "V": Vs, "Condition": condition_list, "Label":label_list})
 
-        print(game_counts)
+    return df, game_counts
+
+if __name__ == "__main__":
+
+    if len(sys.argv) < 4:
+        print("Usage: python game_stats.py [game_data.csv] [errors.csv] [n_randomizations]")
+
+    games, errors = get_data(sys.argv[1], sys.argv[2])
+    uv_df, game_counts = simulate_games(games, errors, int(sys.argv[3]))

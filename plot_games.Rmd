@@ -1,0 +1,26 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+library(ggplot2)
+```
+
+## Do randomization test
+
+```{python}
+import game_stats as gs
+games, errors = gs.get_data("/home/dolsone/Downloads/payoff2.csv", "/home/dolsone/Downloads/errors2.csv")
+uv_df, game_counts = gs.simulate_games(games, errors, 100)
+```
+
+## Make plot
+
+
+```{r}
+py$uv_df$Condition <- as.factor(py$uv_df$Condition)
+ggplot(data=py$uv_df, aes(x=U, y=V, color=Condition)) + geom_density2d(aes(group = Condition)) + theme_classic() + geom_hline(yintercept = 0) + geom_vline(xintercept=0) + geom_hline(yintercept = 1, linetype="dashed") + geom_vline(xintercept = 1, linetype="dashed") + geom_abline(slope = 1, intercept = 0, linetype="dashed")
+```

@@ -45,7 +45,7 @@ def determine_game(game):
 
 
 def get_uv(game):
-    print(game)
+    # print(game)
 
     R,S,T,P = game
 
@@ -54,6 +54,8 @@ def get_uv(game):
 
     U = (S - P) / (R - P)
     V = (T - P) / (R - P)
+
+    # print(R,S,T,P,U,V)
 
     return U, V
 

@@ -13,7 +13,7 @@ library(ggplot2)
 
 ```{python}
 import game_stats as gs
-games, errors = gs.get_data("/home/dolsone/Downloads/payoff2.csv", "/home/dolsone/Downloads/errors2.csv")
+games, errors = gs.get_data("/home/dolsone/Downloads/payoff3.csv", "/home/dolsone/Downloads/errors3.csv")
 uv_df, game_counts = gs.simulate_games(games, errors, 100)
 ```
 
@@ -22,5 +22,5 @@ uv_df, game_counts = gs.simulate_games(games, errors, 100)
 
 ```{r}
 py$uv_df$Condition <- as.factor(py$uv_df$Condition)
-ggplot(data=py$uv_df, aes(x=U, y=V, color=Condition)) + geom_density2d(aes(group = Condition)) + theme_classic() + geom_hline(yintercept = 0) + geom_vline(xintercept=0) + geom_hline(yintercept = 1, linetype="dashed") + geom_vline(xintercept = 1, linetype="dashed") + geom_abline(slope = 1, intercept = 0, linetype="dashed")
+ggplot(data=py$uv_df, aes(x=U, y=V, fill=Condition)) + stat_density2d(aes(group = Condition, alpha = stat(level)), geom="polygon", bins=4) + theme_classic() + geom_hline(yintercept = 0) + geom_vline(xintercept=0) + geom_hline(yintercept = 1, linetype="dashed") + geom_vline(xintercept = 1, linetype="dashed") + geom_abline(slope = 1, intercept = 0, linetype="dashed")
 ```

@@ -1,0 +1,38 @@
+---
+title: "Game theory networks"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+library(ggraph)
+library(tidygraph)
+```
+
+```{r}
+
+red <- read_csv("repos/egt_networks/example_red.csv")
+green <- read_csv("repos/egt_networks/example_green.csv")
+red$color <- "Red"
+green$color <- "Green"
+
+all_data <- rbind(red, green)
+all_data$Max <- NULL
+all_data$Min <- NULL
+all_data$Mean <- NULL
+all_data$Area <- NULL
+colnames(all_data) <- c("ID", "x", "y", "color")
+all_data$ID <- 1:length(all_data$ID)
+
+DM <- as.matrix(dist(all_data %>% transmute(x=x, y=y)))
+full_graph <- tbl_graph(nodes=all_data) %>% activate(edges) %>% full_join(as.data.frame(which(DM < 100, arr.ind = T)) %>% transmute(from=row, to=col))
+
+
+layout <- create_layout(full_graph, all_data)
+layout$y <- layout$y * -1 # Coordinate systems in ImageJ and ggplot have a flipped Y axis
+colnames(layout) <- c("ID", "x", "y", "color", "ID1", "x1","y1","color1",".ggraph.orig_index",".ggraph.index","circular")
+ggraph(layout) + geom_node_circle(aes(r=5, fill=color)) + scale_fill_manual(values = c("Green"="green", "Red"="red")) + theme_graph() + geom_edge_diagonal()
+
+
+```

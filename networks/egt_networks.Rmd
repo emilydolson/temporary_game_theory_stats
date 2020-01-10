@@ -8,12 +8,14 @@ knitr::opts_chunk$set(echo = TRUE)
 library(reticulate)
 library(ggraph)
 library(tidygraph)
+library(readr)
+library(stringr)
 ```
 
 ```{r}
 
-red <- read_csv("repos/egt_networks/example_red.csv")
-green <- read_csv("repos/egt_networks/example_green.csv")
+red <- read_csv("example_red.csv")
+green <- read_csv("example_green.csv")
 red$color <- "Red"
 green$color <- "Green"
 
@@ -26,7 +28,11 @@ colnames(all_data) <- c("ID", "x", "y", "color")
 all_data$ID <- 1:length(all_data$ID)
 
 DM <- as.matrix(dist(all_data %>% transmute(x=x, y=y)))
-full_graph <- tbl_graph(nodes=all_data) %>% activate(edges) %>% full_join(as.data.frame(which(DM < 100, arr.ind = T)) %>% transmute(from=row, to=col))
+
+edges <- as.data.frame(which(DM < 100, arr.ind = T)) %>% transmute(from=row, to=col)
+edges <- edges %>% rowwise() %>% mutate(type = toString(str_sort(unique(c(all_data[from,"color"], all_data[to,"color"])))))
+
+full_graph <- tbl_graph(nodes=all_data) %>% activate(edges) %>% full_join(edges)
 
 
 layout <- create_layout(full_graph, all_data)
